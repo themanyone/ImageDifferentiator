@@ -1,6 +1,6 @@
 ﻿namespace ImageDifferentiator
 {
-    partial class Form1
+    partial class DifferentiationForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -61,6 +61,7 @@
             openFileDialog1 = new OpenFileDialog();
             timer1 = new System.Windows.Forms.Timer(components);
             folderBrowserDialog1 = new FolderBrowserDialog();
+            tbURL = new TextBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -90,6 +91,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(tbURL);
             splitContainer1.Panel2.Controls.Add(cbPlayTone);
             splitContainer1.Panel2.Controls.Add(tbDetected);
             splitContainer1.Panel2.Controls.Add(btFolder);
@@ -414,15 +416,23 @@
             timer1.Interval = 1;
             timer1.Tick += timer1_Tick;
             // 
-            // Form1
+            // tbURL
+            // 
+            tbURL.Location = new Point(126, 13);
+            tbURL.Name = "tbURL";
+            tbURL.Size = new Size(201, 23);
+            tbURL.TabIndex = 25;
+            tbURL.Text = "http://192.168.1.97:81/stream";
+            // 
+            // DifferentiationForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(956, 718);
             Controls.Add(splitContainer1);
             MinimumSize = new Size(774, 757);
-            Name = "Form1";
-            Text = "Form1";
+            Name = "DifferentiationForm";
+            Text = "ESP32-CAM Image Differientiator";
             Load += Form1_Load;
             SizeChanged += Form1_SizeChanged;
             splitContainer1.Panel1.ResumeLayout(false);
@@ -477,5 +487,6 @@
         private CheckBox cbSave;
         private FolderBrowserDialog folderBrowserDialog1;
         private CheckBox cbPlayTone;
+        private TextBox tbURL;
     }
 }

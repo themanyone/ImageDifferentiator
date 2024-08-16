@@ -7,9 +7,9 @@ using System.Numerics;
 
 namespace ImageDifferentiator
 {
-    public partial class Form1 : Form
+    public partial class DifferentiationForm : Form
     {
-        public Form1()
+        public DifferentiationForm()
         {
             InitializeComponent();
         }
@@ -140,7 +140,7 @@ namespace ImageDifferentiator
             mjpeg = new MjpegDecoder();
             mjpeg.FrameReady += mjpeg_FrameReady;
             mjpeg.Error += mjpeg_Error;
-            mjpeg.ParseStream(new Uri("http://192.168.1.97:81/stream"));
+            mjpeg.ParseStream(new Uri(tbURL.Text));
             _decoding = true;
             btStream.BackColor = Color.LightGreen;
         }
@@ -161,6 +161,19 @@ namespace ImageDifferentiator
         {
             //MessageBox.Show(e.Message);
             lbInfo.Text = e.Message;
+
+            //this can't be good
+            //let's try to restart it
+            mjpeg.StopStream();
+            _decoding = false;
+            btStream.BackColor = Color.Pink;
+            Thread.Sleep(500);
+            mjpeg = new MjpegDecoder();
+            mjpeg.FrameReady += mjpeg_FrameReady;
+            mjpeg.Error += mjpeg_Error;
+            mjpeg.ParseStream(new Uri(tbURL.Text));
+            btStream.BackColor = Color.LightGreen;
+
         }
 
         Queue<Image> _imageQueue = new Queue<Image>();
