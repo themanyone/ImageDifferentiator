@@ -33,6 +33,13 @@
             splitContainer2 = new SplitContainer();
             pictureBox1 = new PictureBox();
             pictureBox2 = new PictureBox();
+            label9 = new Label();
+            lbQueueSize = new Label();
+            label8 = new Label();
+            lbRestarts = new Label();
+            label7 = new Label();
+            lbDetCnt = new Label();
+            tbURL = new TextBox();
             cbPlayTone = new CheckBox();
             tbDetected = new TextBox();
             btFolder = new Button();
@@ -61,7 +68,6 @@
             openFileDialog1 = new OpenFileDialog();
             timer1 = new System.Windows.Forms.Timer(components);
             folderBrowserDialog1 = new FolderBrowserDialog();
-            tbURL = new TextBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -91,6 +97,12 @@
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(label9);
+            splitContainer1.Panel2.Controls.Add(lbQueueSize);
+            splitContainer1.Panel2.Controls.Add(label8);
+            splitContainer1.Panel2.Controls.Add(lbRestarts);
+            splitContainer1.Panel2.Controls.Add(label7);
+            splitContainer1.Panel2.Controls.Add(lbDetCnt);
             splitContainer1.Panel2.Controls.Add(tbURL);
             splitContainer1.Panel2.Controls.Add(cbPlayTone);
             splitContainer1.Panel2.Controls.Add(tbDetected);
@@ -158,6 +170,68 @@
             pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox2.TabIndex = 0;
             pictureBox2.TabStop = false;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(232, 219);
+            label9.Name = "label9";
+            label9.Size = new Size(68, 15);
+            label9.TabIndex = 31;
+            label9.Text = "Queue Size:";
+            // 
+            // lbQueueSize
+            // 
+            lbQueueSize.AutoSize = true;
+            lbQueueSize.Location = new Point(299, 219);
+            lbQueueSize.Name = "lbQueueSize";
+            lbQueueSize.Size = new Size(13, 15);
+            lbQueueSize.TabIndex = 30;
+            lbQueueSize.Text = "0";
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(232, 199);
+            label8.Name = "label8";
+            label8.Size = new Size(51, 15);
+            label8.TabIndex = 29;
+            label8.Text = "Restarts:";
+            // 
+            // lbRestarts
+            // 
+            lbRestarts.AutoSize = true;
+            lbRestarts.Location = new Point(299, 199);
+            lbRestarts.Name = "lbRestarts";
+            lbRestarts.Size = new Size(13, 15);
+            lbRestarts.TabIndex = 28;
+            lbRestarts.Text = "0";
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(232, 177);
+            label7.Name = "label7";
+            label7.Size = new Size(66, 15);
+            label7.TabIndex = 27;
+            label7.Text = "Detections:";
+            // 
+            // lbDetCnt
+            // 
+            lbDetCnt.AutoSize = true;
+            lbDetCnt.Location = new Point(299, 177);
+            lbDetCnt.Name = "lbDetCnt";
+            lbDetCnt.Size = new Size(13, 15);
+            lbDetCnt.TabIndex = 26;
+            lbDetCnt.Text = "0";
+            // 
+            // tbURL
+            // 
+            tbURL.Location = new Point(126, 13);
+            tbURL.Name = "tbURL";
+            tbURL.Size = new Size(201, 23);
+            tbURL.TabIndex = 25;
+            tbURL.Text = "http://192.168.1.97:81/stream";
             // 
             // cbPlayTone
             // 
@@ -255,7 +329,7 @@
             // 
             nudChechEvery.Location = new Point(126, 122);
             nudChechEvery.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
-            nudChechEvery.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            nudChechEvery.Minimum = new decimal(new int[] { 16, 0, 0, 0 });
             nudChechEvery.Name = "nudChechEvery";
             nudChechEvery.Size = new Size(75, 23);
             nudChechEvery.TabIndex = 15;
@@ -413,16 +487,8 @@
             // timer1
             // 
             timer1.Enabled = true;
-            timer1.Interval = 1;
+            timer1.Interval = 16;
             timer1.Tick += timer1_Tick;
-            // 
-            // tbURL
-            // 
-            tbURL.Location = new Point(126, 13);
-            tbURL.Name = "tbURL";
-            tbURL.Size = new Size(201, 23);
-            tbURL.TabIndex = 25;
-            tbURL.Text = "http://192.168.1.97:81/stream";
             // 
             // DifferentiationForm
             // 
@@ -488,5 +554,11 @@
         private FolderBrowserDialog folderBrowserDialog1;
         private CheckBox cbPlayTone;
         private TextBox tbURL;
+        private Label lbDetCnt;
+        private Label label7;
+        private Label label8;
+        private Label lbRestarts;
+        private Label label9;
+        private Label lbQueueSize;
     }
 }

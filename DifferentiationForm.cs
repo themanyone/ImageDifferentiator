@@ -126,6 +126,8 @@ namespace ImageDifferentiator
         DateTime _lastChecked = DateTime.Now;
 
         MjpegDecoder mjpeg = null;
+        int _detections = 0;
+
         private void btStream_Click(object sender, EventArgs e)
         {
             if (_decoding == true)
@@ -143,6 +145,8 @@ namespace ImageDifferentiator
             mjpeg.ParseStream(new Uri(tbURL.Text));
             _decoding = true;
             btStream.BackColor = Color.LightGreen;
+            _detections = 0;
+            _restarts = 0;
         }
 
         private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
@@ -164,6 +168,18 @@ namespace ImageDifferentiator
 
             //this can't be good
             //let's try to restart it
+            //seems like the slowness of processing the queue messes up the restart
+            //lets let it play out
+            if (_imageQueue.Count() == 0)
+            {
+                RestartStream();
+            }
+        }
+
+        private int _restarts = 0;
+
+        private void RestartStream()
+        {
             mjpeg.StopStream();
             _decoding = false;
             btStream.BackColor = Color.Pink;
@@ -173,7 +189,9 @@ namespace ImageDifferentiator
             mjpeg.Error += mjpeg_Error;
             mjpeg.ParseStream(new Uri(tbURL.Text));
             btStream.BackColor = Color.LightGreen;
-
+            _decoding = true;
+            _restarts++;
+            lbRestarts.Text = _restarts.ToString();
         }
 
         Queue<Image> _imageQueue = new Queue<Image>();
@@ -184,18 +202,32 @@ namespace ImageDifferentiator
             {
                 pictureBox2.Image = pictureBox1.Image;
                 pictureBox1.Image = cbNorm.Checked ? Normalize(_imageQueue.Dequeue()) : _imageQueue.Dequeue();
+                lbQueueSize.Text = _imageQueue.Count.ToString();
                 if (cbDoCalc.Checked)
                 {
                     CalculateDifference();
                 }
             }
+            //lets see if the stream has stopped
+            if (_decoding)
+            {
+                if (DateTime.Now.Subtract(_lastChecked).TotalSeconds > 3)
+                {
+                    // seems like the slowness of processing the queue messes up the restart
+                    //lets let it play out
+                    if (_imageQueue.Count() == 0)
+                    {
+                        RestartStream();
+                    }
+                }
+            }
         }
 
         SoundPlayer simpleSound = new SoundPlayer(@"clank.wav");
-        
+
         private void CalculateDifference()
         {
-            if (pictureBox1.Image == null || pictureBox2.Image == null 
+            if (pictureBox1.Image == null || pictureBox2.Image == null
                 || pictureBox1.Image.Width != pictureBox2.Image.Width)
                 return;
 
@@ -272,6 +304,9 @@ namespace ImageDifferentiator
             {
                 tbDetected.Text = "Motion";
                 tbDetected.BackColor = Color.LightGreen;
+                _detections++;
+                lbDetCnt.Text = _detections.ToString();
+
                 if (cbPlayTone.Checked)
                 {
                     simpleSound.Play();
