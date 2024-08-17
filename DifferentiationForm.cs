@@ -149,6 +149,7 @@ namespace ImageDifferentiator
             _restarts = 0;
         }
 
+        private int _discards = 0;
         private void mjpeg_FrameReady(object sender, FrameReadyEventArgs e)
         {
             if (DateTime.Now > _lastChecked.AddMilliseconds((double)nudChechEvery.Value))
@@ -158,6 +159,11 @@ namespace ImageDifferentiator
                 stream.Position = 0;
                 _imageQueue.Enqueue(Image.FromStream(stream));
                 _lastChecked = DateTime.Now;
+            }
+            else
+            {
+                _discards++;
+                lbDiscards.Text = _discards.ToString();
             }
         }
 

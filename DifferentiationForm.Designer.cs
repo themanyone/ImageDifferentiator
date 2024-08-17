@@ -68,6 +68,8 @@
             openFileDialog1 = new OpenFileDialog();
             timer1 = new System.Windows.Forms.Timer(components);
             folderBrowserDialog1 = new FolderBrowserDialog();
+            label10 = new Label();
+            lbDiscards = new Label();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -97,6 +99,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(label10);
+            splitContainer1.Panel2.Controls.Add(lbDiscards);
             splitContainer1.Panel2.Controls.Add(label9);
             splitContainer1.Panel2.Controls.Add(lbQueueSize);
             splitContainer1.Panel2.Controls.Add(label8);
@@ -174,7 +178,7 @@
             // label9
             // 
             label9.AutoSize = true;
-            label9.Location = new Point(232, 219);
+            label9.Location = new Point(236, 193);
             label9.Name = "label9";
             label9.Size = new Size(68, 15);
             label9.TabIndex = 31;
@@ -183,7 +187,7 @@
             // lbQueueSize
             // 
             lbQueueSize.AutoSize = true;
-            lbQueueSize.Location = new Point(299, 219);
+            lbQueueSize.Location = new Point(303, 193);
             lbQueueSize.Name = "lbQueueSize";
             lbQueueSize.Size = new Size(13, 15);
             lbQueueSize.TabIndex = 30;
@@ -192,7 +196,7 @@
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(232, 199);
+            label8.Location = new Point(236, 173);
             label8.Name = "label8";
             label8.Size = new Size(51, 15);
             label8.TabIndex = 29;
@@ -201,7 +205,7 @@
             // lbRestarts
             // 
             lbRestarts.AutoSize = true;
-            lbRestarts.Location = new Point(299, 199);
+            lbRestarts.Location = new Point(303, 173);
             lbRestarts.Name = "lbRestarts";
             lbRestarts.Size = new Size(13, 15);
             lbRestarts.TabIndex = 28;
@@ -210,7 +214,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(232, 177);
+            label7.Location = new Point(236, 151);
             label7.Name = "label7";
             label7.Size = new Size(66, 15);
             label7.TabIndex = 27;
@@ -219,7 +223,7 @@
             // lbDetCnt
             // 
             lbDetCnt.AutoSize = true;
-            lbDetCnt.Location = new Point(299, 177);
+            lbDetCnt.Location = new Point(303, 151);
             lbDetCnt.Name = "lbDetCnt";
             lbDetCnt.Size = new Size(13, 15);
             lbDetCnt.TabIndex = 26;
@@ -490,6 +494,24 @@
             timer1.Interval = 16;
             timer1.Tick += timer1_Tick;
             // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new Point(237, 214);
+            label10.Name = "label10";
+            label10.Size = new Size(54, 15);
+            label10.TabIndex = 33;
+            label10.Text = "Discards:";
+            // 
+            // lbDiscards
+            // 
+            lbDiscards.AutoSize = true;
+            lbDiscards.Location = new Point(304, 214);
+            lbDiscards.Name = "lbDiscards";
+            lbDiscards.Size = new Size(13, 15);
+            lbDiscards.TabIndex = 32;
+            lbDiscards.Text = "0";
+            // 
             // DifferentiationForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -560,5 +582,7 @@
         private Label lbRestarts;
         private Label label9;
         private Label lbQueueSize;
+        private Label label10;
+        private Label lbDiscards;
     }
 }
