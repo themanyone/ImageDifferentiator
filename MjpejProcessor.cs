@@ -1,138 +1,118 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ImageDifferentiator
 {
     public class MjpegDecoder
     {
         // magic 2 byte header for JPEG images
-        private readonly byte[] JpegHeader = { 0xff, 0xd8 };
+        private readonly byte[] _jpegHeader = { 0xff, 0xd8 };
 
         // pull down 1024 bytes at a time
-        private const int ChunkSize = 1024;
+        private const int ChunkSize = 4096;
 
-        // used to cancel reading the stream
-        private bool _streamActive;
+        // It's best practice to reuse a single HttpClient instance.
+        private static readonly HttpClient _client = new HttpClient();
 
-        // current encoded JPEG image
-        public byte[] CurrentFrame { get; private set; }
+        private CancellationTokenSource? _cancellationTokenSource;
 
-        // used to marshal back to UI thread
-        private SynchronizationContext _context;
-
-        // event to get the buffer above handed to you
-        public event EventHandler<FrameReadyEventArgs> FrameReady;
-        public event EventHandler<ErrorEventArgs> Error;
+        public event EventHandler<FrameReadyEventArgs>? FrameReady;
+        public event EventHandler<ErrorEventArgs>? Error;
 
         public MjpegDecoder()
         {
-            _context = SynchronizationContext.Current;
         }
 
         public void ParseStream(Uri uri)
         {
-            var request = (HttpWebRequest)WebRequest.Create(uri);
-
-            // asynchronously get a response
-            request.BeginGetResponse(OnGetResponse, request);
+            _cancellationTokenSource = new CancellationTokenSource();
+            Task.Run(() => CaptureStream(uri, _cancellationTokenSource.Token));
         }
 
         public void StopStream()
         {
-            _streamActive = false;
+            _cancellationTokenSource?.Cancel();
         }
 
-        private void OnGetResponse(IAsyncResult asyncResult)
+        private async Task CaptureStream(Uri uri, CancellationToken token)
         {
-            byte[] imageBuffer = new byte[1024 * 1024];
-
-            // get the response
-            var req = (HttpWebRequest)asyncResult.AsyncState;
+            var imageBuffer = new MemoryStream();
 
             try
             {
-                HttpWebResponse resp = (HttpWebResponse)req.EndGetResponse(asyncResult);
+                using var response = await _client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                response.EnsureSuccessStatusCode();
 
                 // find our magic boundary value
-                string contentType = resp.Headers["Content-Type"];
-                if (!string.IsNullOrEmpty(contentType) && !contentType.Contains("="))
-                    throw new Exception("Invalid content-type header.  The camera is likely not returning a proper MJPEG stream.");
-
-                string boundary = resp.Headers["Content-Type"].Split('=')[1].Replace("\"", "");
-                byte[] boundaryBytes = Encoding.UTF8.GetBytes(boundary.StartsWith("--") ? boundary : "--" + boundary);
-
-                Stream s = resp.GetResponseStream();
-                var br = new BinaryReader(s);
-
-                _streamActive = true;
-
-                byte[] buff = br.ReadBytes(ChunkSize);
-
-                while (_streamActive)
+                var contentType = response.Content.Headers.ContentType?.ToString();
+                if (string.IsNullOrEmpty(contentType) || !contentType.Contains("boundary="))
                 {
+                    throw new Exception("Invalid content-type header.  The camera is likely not returning a proper MJPEG stream.");
+                }
+
+                var boundary = contentType.Split("boundary=")[1].Replace("\"", "");
+                var boundaryBytes = Encoding.UTF8.GetBytes("--" + boundary);
+
+                using var stream = await response.Content.ReadAsStreamAsync(token);
+                var reader = new BinaryReader(stream);
+
+                while (!token.IsCancellationRequested)
+                {
+                    var buff = reader.ReadBytes(ChunkSize);
+                    if (buff.Length == 0)
+                    {
+                        await Task.Delay(100, token); // Stream paused, wait a bit
+                        continue;
+                    }
+
                     // find the JPEG header
-                    int imageStart = buff.Find(JpegHeader);
+                    int imageStart = buff.Find(_jpegHeader);
 
                     if (imageStart != -1)
                     {
                         // copy the start of the JPEG image to the imageBuffer
-                        int size = buff.Length - imageStart;
-                        Array.Copy(buff, imageStart, imageBuffer, 0, size);
+                        imageBuffer.Write(buff, imageStart, buff.Length - imageStart);
 
                         while (true)
                         {
-                            buff = br.ReadBytes(ChunkSize);
+                            buff = reader.ReadBytes(ChunkSize);
 
                             // find the boundary text
                             int imageEnd = buff.Find(boundaryBytes);
                             if (imageEnd != -1)
                             {
                                 // copy the remainder of the JPEG to the imageBuffer
-                                Array.Copy(buff, 0, imageBuffer, size, imageEnd);
-                                size += imageEnd;
+                                imageBuffer.Write(buff, 0, imageEnd);
 
-                                byte[] frame = new byte[size];
-                                Array.Copy(imageBuffer, 0, frame, 0, size);
+                                // We have a complete frame.
+                                ProcessFrame(imageBuffer.ToArray());
 
-                                ProcessFrame(frame);
-
-                                // copy the leftover data to the start
-                                Array.Copy(buff, imageEnd, buff, 0, buff.Length - imageEnd);
-
-                                // fill the remainder of the buffer with new data and start over
-                                byte[] temp = br.ReadBytes(imageEnd);
-
-                                Array.Copy(temp, 0, buff, buff.Length - imageEnd, temp.Length);
+                                // Reset for the next frame, carrying over any leftover data.
+                                imageBuffer.SetLength(0);
+                                imageBuffer.Write(buff, imageEnd, buff.Length - imageEnd);
                                 break;
                             }
 
                             // copy all of the data to the imageBuffer
-                            Array.Copy(buff, 0, imageBuffer, size, buff.Length);
-                            size += buff.Length;
+                            imageBuffer.Write(buff, 0, buff.Length);
                         }
                     }
                 }
-
             }
             catch (Exception ex)
             {
-                if (Error != null)
-                    _context.Post(delegate { Error(this, new ErrorEventArgs(ex.Message)); }, null);
+                Error?.Invoke(this, new ErrorEventArgs(ex.Message));
             }
         }
 
         private void ProcessFrame(byte[] frame)
         {
-            CurrentFrame = frame;
-            _context.Post(delegate
-            {
-                // tell whoever's listening that we have a frame to draw
-                if (FrameReady != null)
-                    FrameReady(this, new FrameReadyEventArgs(CurrentFrame));
-            }, null);
+            FrameReady?.Invoke(this, new FrameReadyEventArgs(frame));
         }
     }
 
